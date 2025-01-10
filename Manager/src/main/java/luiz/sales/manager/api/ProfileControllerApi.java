@@ -9,9 +9,9 @@ import luiz.sales.manager.model.Profile;
 
 public interface ProfileControllerApi {
 
-	@PostMapping("/register")
+	@PostMapping("/register/")
 	void registerProfile(@RequestBody Profile profile);
 	
-	@GetMapping("/findByCpf")
+	@GetMapping("/findByCpf/")
 	Profile findProfile(@RequestParam String cpf);
 }
