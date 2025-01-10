@@ -24,6 +24,6 @@ public class ProfileController implements ProfileControllerApi{
 	@Override
 	public Profile findProfile(String cpf) {
 		
-		return null;
+		return profileService.findProfile(cpf);
 	}
 }

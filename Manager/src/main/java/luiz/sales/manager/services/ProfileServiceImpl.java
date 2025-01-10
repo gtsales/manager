@@ -3,7 +3,7 @@ package luiz.sales.manager.services;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.mongodb.DuplicateKeyException;
+import org.springframework.dao.DuplicateKeyException;
 import com.mongodb.MongoException;
 import com.mongodb.MongoWriteException;
 
@@ -41,11 +41,13 @@ public class ProfileServiceImpl implements ProfileService{
 	@Override
 	public Profile findProfile(String cpf) {
 		
+		Profile profile = null;
+		
 		log.trace("Starting find profile process. CPF {}", cpf);
 		
 		try {
 			
-			profileRepository.findByCpf(cpf);
+			profile = profileRepository.findByCpf(cpf);
 		} catch (MongoException e) {
 			
 			log.error("something went wrong when trying to find the profile. CPF {} - MESSAGE {}", cpf, e.getMessage());
@@ -53,6 +55,6 @@ public class ProfileServiceImpl implements ProfileService{
 		
 		log.trace("Finishing find profile process. CPF {}", cpf);
 		
-		return null;
+		return profile;
 	}
 }
