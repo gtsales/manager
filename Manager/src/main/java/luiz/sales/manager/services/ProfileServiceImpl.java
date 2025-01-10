@@ -3,7 +3,9 @@ package luiz.sales.manager.services;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.mongodb.DuplicateKeyException;
 import com.mongodb.MongoException;
+import com.mongodb.MongoWriteException;
 
 import lombok.extern.slf4j.Slf4j;
 import luiz.sales.manager.interfaces.ProfileService;
@@ -20,6 +22,20 @@ public class ProfileServiceImpl implements ProfileService{
 	@Override
 	public void registerProfile(Profile profile) {
 		
+		log.trace("Starting register profile process. PROFILE {}", profile);
+		
+		if (profile !=null) {
+			
+			try {
+				
+				profileRepository.insert(profile);
+			} catch (MongoWriteException | DuplicateKeyException e) {
+				
+				log.error("something went wrong when trying to register the profile. PROFILE {}", profile);
+			}
+		}
+		
+		log.trace("Finishing register profile process. PROFILE {}", profile);
 	}
 
 	@Override
