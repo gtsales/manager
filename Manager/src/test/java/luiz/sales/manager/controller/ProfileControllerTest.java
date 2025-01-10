@@ -1,14 +1,12 @@
 package luiz.sales.manager.controller;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,10 +17,12 @@ import org.mockito.InjectMocks;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import io.restassured.http.ContentType;
+import io.restassured.module.mockmvc.RestAssuredMockMvc;
 import luiz.sales.manager.interfaces.ProfileService;
 import luiz.sales.manager.model.Address;
 import luiz.sales.manager.model.Profile;
@@ -52,7 +52,8 @@ public class ProfileControllerTest {
 	@BeforeEach
 	void setup() {
 		
-		MockMvcBuilders.standaloneSetup(mockMvc).build();
+		RestAssuredMockMvc.mockMvc(mockMvc);
+		
 		contact = new ArrayList<>();
 		contact.add("+55 11 99999-9999");
 		contact.add("john.doe@example.com");
@@ -88,10 +89,13 @@ public class ProfileControllerTest {
 				+ "  ]\r\n"
 				+ "}";
 		
-		mockMvc.perform(post("/profile/register/")
-				.contentType("application/json")
-				.content(requestBody))
-		.andExpect(status().isOk());
+		RestAssuredMockMvc.given()
+			.accept(ContentType.JSON)
+			.contentType(ContentType.JSON)
+			.body(requestBody)
+		.when().post("/profile/register/")
+		.then().assertThat().statusCode(HttpStatus.OK.value());
+		
 	}
 	
 	@Test
@@ -99,22 +103,12 @@ public class ProfileControllerTest {
 		
 		doReturn(profile).when(profileService).findProfile(cpf);
 		
-	    mockMvc.perform(get("/profile/findByCpf/")
-	            .param("cpf", cpf))
-	            .andExpect(status().isOk())
-	            .andExpect(jsonPath("$.id").value(profile.getId()))
-	            .andExpect(jsonPath("$.name").value(profile.getName()))
-	            .andExpect(jsonPath("$.cpf").value(profile.getCpf()))
-	            .andExpect(jsonPath("$.role").value(profile.getRole()))
-	            .andExpect(jsonPath("$.project").value(profile.getProject()))
-	            .andExpect(jsonPath("$.address.cep").value(profile.getAddress().getCep()))
-	            .andExpect(jsonPath("$.address.street").value(profile.getAddress().getStreet()))
-	            .andExpect(jsonPath("$.address.number").value(profile.getAddress().getNumber()))
-	            .andExpect(jsonPath("$.address.neighborhood").value(profile.getAddress().getNeighborhood()))
-	            .andExpect(jsonPath("$.address.city").value(profile.getAddress().getCity()))
-	            .andExpect(jsonPath("$.address.state").value(profile.getAddress().getState()))
-	            .andExpect(jsonPath("$.contact[0]").value(profile.getContact().get(0)))
-	            .andExpect(jsonPath("$.contact[1]").value(profile.getContact().get(1)));
+		RestAssuredMockMvc.given()
+			.accept(ContentType.JSON)
+			.when().get("/profile/findByCpf/?cpf=12345678900")
+			.then().assertThat()
+			.statusCode(HttpStatus.OK.value())
+			.body(is(equalTo("{\"id\":\"3213321321\",\"name\":\"John Doe\",\"cpf\":\"12345678900\",\"role\":\"Software Engineer\",\"project\":\"Project Alpha\",\"address\":{\"cep\":\"01001000\",\"street\":\"Praça da Sé\",\"number\":\"15\",\"neighborhood\":\"Sé\",\"city\":\"São Paulo\",\"state\":\"SP\"},\"contact\":[\"+55 11 99999-9999\",\"john.doe@example.com\"]}")));
 		
 		verify(profileService).findProfile(cpf);
 		verifyNoMoreInteractions(profileService);
