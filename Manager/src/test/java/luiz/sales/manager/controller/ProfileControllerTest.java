@@ -4,9 +4,9 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -67,7 +67,7 @@ public class ProfileControllerTest {
 	@Test
 	void WhenCallRegisterProfile_ShouldReturnOk() throws Exception {
 		
-		doNothing().when(profileService).registerProfile(any(Profile.class));
+		doNothing().when(profileService).registerProfile(profile);
 		
 		String requestBody = "{\r\n"
 				+ "  \"id\": \"3213321321\",\r\n"
@@ -101,11 +101,12 @@ public class ProfileControllerTest {
 	@Test
 	void WhenCallFindProfile_ShouldReturnProfile() throws Exception {
 		
-		doReturn(profile).when(profileService).findProfile(cpf);
+		when(profileService.findProfile(any())).thenReturn(profile);
 		
 		RestAssuredMockMvc.given()
 			.accept(ContentType.JSON)
-			.when().get("/profile/findByCpf/?cpf=12345678900")
+			.param("cpf", "12345678900")
+			.when().get("/profile/findByCpf/")
 			.then().assertThat()
 			.statusCode(HttpStatus.OK.value())
 			.body(is(equalTo("{\"id\":\"3213321321\",\"name\":\"John Doe\",\"cpf\":\"12345678900\",\"role\":\"Software Engineer\",\"project\":\"Project Alpha\",\"address\":{\"cep\":\"01001000\",\"street\":\"Praça da Sé\",\"number\":\"15\",\"neighborhood\":\"Sé\",\"city\":\"São Paulo\",\"state\":\"SP\"},\"contact\":[\"+55 11 99999-9999\",\"john.doe@example.com\"]}")));
