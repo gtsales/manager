@@ -15,10 +15,10 @@ public class RabbitMQServiceImpl implements RabbitMQService{
 	RabbitTemplate rabbitTemplate;
 	
 	@Override
-	public void sendMessage(String routingKey, Object profile) {
+	public void sendMessage(String nameQueue, Object profile) {
 		
 		log.trace("Starting send message to queue. PROFILE {%s}", profile);
 		
-		rabbitTemplate.convertAndSend(routingKey, profile);
+		rabbitTemplate.convertAndSend(nameQueue, profile);
 	}
 }
